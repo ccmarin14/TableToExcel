@@ -8,9 +8,17 @@ function ExportToExcel(table){
     link.click();
 }
 
-function findString(word,chartInit,charEnd){
-    let init = (word.indexOf(chartInit)) + (chartInit.length + 2);
-    let end = word.indexOf(charEnd);
+function findString(word,chartInit,charEnd,type){
+    if (type <= 1) {
+        let init = (word.indexOf(chartInit)) + (chartInit.length + 2);
+    } else {
+        let init = (word.lastIndexOf(chartInit)) + (chartInit.length + 2);
+    }
+    if (type == 0) {
+        let end = word.indexOf(charEnd);
+    } else {
+        let end = word.lastIndexOf(charEnd);
+    }
     let long = (end-init) -1;
     let result = "";
     result = `<td>${word.substr(init,long)}</td>`
@@ -39,8 +47,6 @@ fetch ('data.json')
         DATA.map((data) => {
             let html = data.popup_html.split("\"");
 
-            let cI = (html[24].indexOf("Ciudad")) + 8;
-            let cE = html[24].indexOf("<br>");
             let dI = (html[24].indexOf("Dirección")) + 11;
             let dE = html[24].lastIndexOf("<br>");
             let wI = (html[26].indexOf("&nbsp")) + 6;
@@ -55,7 +61,8 @@ fetch ('data.json')
             boxContent += `<tr>
                             <td>${data.id}</td>
                             <td>${html[21]}</td>
-                            ${findString(html[24],"Ciudad","<br>")}
+                            ${findString(html[24],"Ciudad","<br>",0)}
+                            ${findString(html[24],"Dirección","<br>",1)}
                             <td>${html[24].substr(dI,longD)}</td>
                             <td>${data.lat}</td>
                             <td>${data.lng}</td>
