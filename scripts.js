@@ -4,23 +4,31 @@ function ExportToExcel(table){
     var link = document.getElementById('link');
     var nombre = document.getElementById('nombre');
     link.href = 'data:application/vnd.ms-Excel,' + encodeURIComponent(table);
-    link.download = nombre.value;
+    link.download = `${nombre.value}.xlsx`;
     link.click();
 }
 
 function findString(word,chartInit,charEnd,type){
-    if (type <= 1) {
-        let init = (word.indexOf(chartInit)) + (chartInit.length + 2);
-    } else {
-        let init = (word.lastIndexOf(chartInit)) + (chartInit.length + 2);
-    }
-    if (type == 0) {
-        let end = word.indexOf(charEnd);
-    } else {
-        let end = word.lastIndexOf(charEnd);
-    }
-    let long = (end-init) -1;
+    let init;
+    let end;
     let result = "";
+    let longConcidence = (chartInit.length + 2);
+
+    switch(type) {
+        case 1:
+            init = (word.indexOf(chartInit)) + longConcidence;
+            end = word.indexOf(charEnd);
+            break;
+        case 2:
+            init = (word.indexOf(chartInit)) + longConcidence;
+            end = word.lastIndexOf(charEnd);
+            break;
+        case 3:
+            init = (word.lastIndexOf(chartInit)) + longConcidence;
+            end = word.lastIndexOf(charEnd);
+            break;
+    }
+    let long = (end-init);
     result = `<td>${word.substr(init,long)}</td>`
     return result;
 }
@@ -47,32 +55,19 @@ fetch ('data.json')
         DATA.map((data) => {
             let html = data.popup_html.split("\"");
 
-            let dI = (html[24].indexOf("Dirección")) + 11;
-            let dE = html[24].lastIndexOf("<br>");
-            let wI = (html[26].indexOf("&nbsp")) + 6;
-            let wE = html[26].indexOf("<br>");
-            let weI = (html[26].lastIndexOf("&nbsp")) + 6;
-            let weE = html[26].lastIndexOf("<br>");
-            let longC = (cE-cI) -1;
-            let longD = (dE-dI) -1;
-            let longW = (wE-wI);
-            let longWE = (weE-weI);
-
             boxContent += `<tr>
                             <td>${data.id}</td>
                             <td>${html[21]}</td>
-                            ${findString(html[24],"Ciudad","<br>",0)}
-                            ${findString(html[24],"Dirección","<br>",1)}
-                            <td>${html[24].substr(dI,longD)}</td>
+                            ${findString(html[24],"Ciudad","<br>",1)}
+                            ${findString(html[24],"Dirección","<br>",2)}
                             <td>${data.lat}</td>
                             <td>${data.lng}</td>
                             <td>${html[19]}</td>
-                            <td>${html[26].substr(wI,longW)}</td>
-                            <td>${html[26].substr(weI,longWE)}</td>
-                           </tr>`;
+                            ${findString(html[26],"&nbs","<br>",1)}
+                            ${findString(html[26],"&nbs","<br>",3)}
+                        </tr>`;
         });
-        boxContent += `</body>
+        boxContent += `</tbody>
                     </table>`;
-        console.log(boxContent);
         $btnExportar.addEventListener("click", function(){ExportToExcel(boxContent)});
     });
